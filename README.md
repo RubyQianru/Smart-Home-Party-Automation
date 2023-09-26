@@ -1,4 +1,3 @@
 # spotifyAPI
+Auto generates k-pop playlist
 
-* Auto generates k-pop playlist
-* *

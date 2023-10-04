@@ -3,6 +3,8 @@ import time
 from spotipy.oauth2 import SpotifyOAuth
 from flask import Flask, request, url_for, session, redirect
 
+import serial
+
 app = Flask(__name__)
 
 app.config['SESSION_COOKIE_NAME'] = 'Cookie'
@@ -24,6 +26,7 @@ def redirect_page():
     session[TOKEN_INFO] = token_info
     return redirect(url_for('save_playlist',_external=True))
 
+# route to save playlist and push tracks to the playback
 @app.route('/savePlaylist')
 def save_playlist():
     try: 
@@ -33,30 +36,38 @@ def save_playlist():
         print('User not logged in')
         return redirect("/")
 
-    # create a Spotipy instance with the access token
+    # create a Spotipy instance 
     sp = spotipy.Spotify(auth=token_info['access_token'])
 
-    # get the user's playlists
+    # get the user's top tracks
     top_tracks = sp.current_user_top_tracks(150, 0, 'medium_term')['items']
     top_tracks_ids = []
 
+    # loop trough user's top tracks, select the tracks where the feature of "danceability" is geq 0.5
+    # push the selected tracks to the playback
+    # build a new playlist and add the selected tracks to the playlist
     for playlist in top_tracks:
         artist = sp.artist(playlist["artists"][0]["external_urls"]["spotify"])
-        if('k-pop' in artist["genres"]):
-            top_tracks_id = playlist['id']
-            top_tracks_ids.append(playlist['uri'])
+        feature = sp.audio_features(playlist['id'])
+        danceability = feature[0]['danceability']
+
+        # if('k-pop' in artist["genres"]):
+        #     top_tracks_ids.append(playlist['uri'])
             # print (playlist['id']) debug
 
-    if len(top_tracks_id) == 0:
-        return 'Hmmm. Do you even listen to K-pop?'
+        if(danceability >= 0.5):
+            print(playlist['id'])
+            top_tracks_ids.append(playlist['uri'])
+
+    if len(top_tracks_ids) == 0:
+        return 'Hmmm. None of your tracks are for party.'
 
     # Create a new playlist
     user_id = sp.me()['id']
     # print('User ID:', user_id)  debug
-    playlist_name = 'Personalized K-pop Party Playlist'
+    playlist_name = 'Personalized Party Playlist'
 
     playlist = sp.user_playlist_create(user=user_id, name=playlist_name, public=True)
-
     # Add the K-pop tracks to the playlist
     sp.user_playlist_add_tracks(user_id, playlist['id'], top_tracks_ids)
 

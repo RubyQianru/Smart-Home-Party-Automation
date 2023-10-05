@@ -2,8 +2,9 @@ import spotipy
 import time
 from spotipy.oauth2 import SpotifyOAuth
 from flask import Flask, request, url_for, session, redirect
+from datetime import date
 
-import serial
+# import serial
 
 app = Flask(__name__)
 
@@ -43,11 +44,10 @@ def save_playlist():
     top_tracks = sp.current_user_top_tracks(150, 0, 'medium_term')['items']
     top_tracks_ids = []
 
-    # loop trough user's top tracks, select the tracks where the feature of "danceability" is geq 0.5
+    # loop trough user's top tracks, select the tracks where the feature of "danceability" is geq 0.5 
     # push the selected tracks to the playback
     # build a new playlist and add the selected tracks to the playlist
     for playlist in top_tracks:
-        artist = sp.artist(playlist["artists"][0]["external_urls"]["spotify"])
         feature = sp.audio_features(playlist['id'])
         danceability = feature[0]['danceability']
 
@@ -56,22 +56,34 @@ def save_playlist():
             # print (playlist['id']) debug
 
         if(danceability >= 0.5):
-            print(playlist['id'])
+            # print(playlist['id']) #for debug
             top_tracks_ids.append(playlist['uri'])
 
     if len(top_tracks_ids) == 0:
         return 'Hmmm. None of your tracks are for party.'
 
-    # Create a new playlist
+    # create a new playlist
     user_id = sp.me()['id']
-    # print('User ID:', user_id)  debug
-    playlist_name = 'Personalized Party Playlist'
+    today = date.today()
+    playlist_name = f'Personalized Party Playlist for {today}'
 
     playlist = sp.user_playlist_create(user=user_id, name=playlist_name, public=True)
-    # Add the K-pop tracks to the playlist
+    # add the party tracks to the playlist
     sp.user_playlist_add_tracks(user_id, playlist['id'], top_tracks_ids)
 
-    return 'Playlist created successfully. Now return to your Spotify.'
+    # get playlist context url
+    playlist_url = playlist['external_urls']['spotify']
+    # start playback
+
+    # Start playback of the playlist on an active Spotify device
+    devices = sp.devices()
+    if devices['devices']:
+        device_id = devices['devices'][0]['id']  # Get the first available device
+        sp.start_playback(device_id=device_id, context_uri=playlist_url)
+        return f'Playback started on device: {device_id}'
+    else:
+        print('No active Spotify devices found.')
+        return f'{playlist} created successfully.'
 
 # function to get the token info from the session
 def get_token():
@@ -94,7 +106,7 @@ def create_spotify_oauth():
         client_id = '89d97481e689412dac9ffa13ba3df86d',
         client_secret = 'ea3b71852d3c4355ba8e721e4858cf83',
         redirect_uri = url_for('redirect_page', _external=True),
-        scope='user-library-read playlist-modify-public playlist-modify-private user-top-read'
+        scope='user-library-read playlist-modify-public playlist-modify-private user-top-read user-modify-playback-state user-read-playback-state'
     )
 
 if __name__ == '__main__':

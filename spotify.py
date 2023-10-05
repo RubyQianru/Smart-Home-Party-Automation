@@ -44,7 +44,7 @@ def save_playlist():
     top_tracks = sp.current_user_top_tracks(150, 0, 'medium_term')['items']
     top_tracks_ids = []
 
-    # loop trough user's top tracks, select the tracks where the feature of "danceability" is geq 0.5 
+    # loop trough user's top tracks, select the tracks where the feature of "danceability" is geq 0.75
     # push the selected tracks to the playback
     # build a new playlist and add the selected tracks to the playlist
     for playlist in top_tracks:
@@ -73,9 +73,8 @@ def save_playlist():
 
     # get playlist context url
     playlist_url = playlist['external_urls']['spotify']
-    # start playback
 
-    # Start playback of the playlist on an active Spotify device
+    # start playback of the playlist on an active Spotify device
     devices = sp.devices()
     if devices['devices']:
         device_id = devices['devices'][0]['id']  # Get the first available device

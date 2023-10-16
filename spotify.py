@@ -1,20 +1,23 @@
 import spotipy
 import time
 from spotipy.oauth2 import SpotifyOAuth
-from flask import Flask, request, url_for, session, redirect
+from flask import Flask, request, url_for, session, redirect, render_template
 from datetime import date
+from flask_socketio import SocketIO
 
-# import serial
+import serial
+import webbrowser
 
 app = Flask(__name__)
 
 app.config['SESSION_COOKIE_NAME'] = 'Cookie'
 app.secret_key = 'ea3b71852d3c4355ba8e721e4858cf83'
 TOKEN_INFO = 'token_info'
+socketio = SocketIO(app)
 
 # route to handle logging in
 @app.route('/')
-def login():
+def login(): 
     auth_url = create_spotify_oauth().get_authorize_url()
     return redirect(auth_url)
 
@@ -30,7 +33,7 @@ def redirect_page():
 # route to save playlist and push tracks to the playback
 @app.route('/savePlaylist')
 def save_playlist():
-    try: 
+    try:      
         token_info = get_token()
         print('Token info', token_info)
     except:
@@ -55,7 +58,7 @@ def save_playlist():
         #     top_tracks_ids.append(playlist['uri'])
             # print (playlist['id']) debug
 
-        if(danceability >= 0.5):
+        if(danceability >= 0.75 ):
             # print(playlist['id']) #for debug
             top_tracks_ids.append(playlist['uri'])
 
@@ -110,3 +113,5 @@ def create_spotify_oauth():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+

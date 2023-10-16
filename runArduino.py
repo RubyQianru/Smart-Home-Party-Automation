@@ -1,7 +1,7 @@
 import serial
 import webbrowser
 
-ser = serial.Serial('COM4', 9600, timeout=1)  
+ser = serial.Serial('COM7s', 9600, timeout=1)  
 
 while True:
     command = ser.readline().decode().strip()

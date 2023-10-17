@@ -3,17 +3,12 @@ import time
 from spotipy.oauth2 import SpotifyOAuth
 from flask import Flask, request, url_for, session, redirect, render_template
 from datetime import date
-from flask_socketio import SocketIO
-
-import serial
-import webbrowser
 
 app = Flask(__name__)
 
 app.config['SESSION_COOKIE_NAME'] = 'Cookie'
-app.secret_key = 'ea3b71852d3c4355ba8e721e4858cf83'
+app.secret_key = 'wiejfoeiajrgoijr'
 TOKEN_INFO = 'token_info'
-socketio = SocketIO(app)
 
 # route to handle logging in
 @app.route('/')
@@ -105,8 +100,8 @@ def get_token():
 
 def create_spotify_oauth():
     return SpotifyOAuth(
-        client_id = '89d97481e689412dac9ffa13ba3df86d',
-        client_secret = 'ea3b71852d3c4355ba8e721e4858cf83',
+        client_id = '1a97db8717b04102af9fb610a2446a7f',
+        client_secret = 'a8ed37f8e8b645ce99de037d8c75697e',
         redirect_uri = url_for('redirect_page', _external=True),
         scope='user-library-read playlist-modify-public playlist-modify-private user-top-read user-modify-playback-state user-read-playback-state'
     )
